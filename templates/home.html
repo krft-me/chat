@@ -1,2 +1,10 @@
 hello :)
 :kfughlqseiufb:
+
+{% for conversation in conversations %}
+<p>Conv : {{conversation.id}} - {{conversation.participants}}</p>
+{% endfor %}
+
+{% for message in messages %}
+<p>Msg : {{message.id}} - {{message.message}} (Conversation {{message.id_conversation}})</p>
+{% endfor %}
