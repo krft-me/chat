@@ -45,11 +45,10 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 @app.route("/", methods=["GET", "POST"])
 def accueil_vendeur():
-    #conv = Conversation()
-    #conv.participants = [10,20]
+    # conv = Conversation()
+    # conv.participants = [10,20]
     # conv.save()
-    Message.add_message(1, datetime.now(), 10,
-                        TypesMessages.string, get_random_string(8))
+    # Message.add_message(1, datetime.now(), 10, TypesMessages.string, get_random_string(8))
     return render_template('home.html', conversations=Conversation.all(), messages=Message.query.order_by(Message.id_conversation.asc()).all())
 
 
