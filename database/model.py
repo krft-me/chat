@@ -18,6 +18,16 @@ class Conversation(db.Model):
         conv = Conversation()
         conv.participants = participants
         conv.save()
+        return conv
+    
+    @classmethod
+    def get_conversations_user(cls, user):
+        all_conv = Conversation.all()
+        liste_conv = []
+        for conv in all_conv:
+            if user in conv.participants:
+                liste_conv.append(conv.to_dict())
+        return liste_conv, 200
 
 
 class Message(db.Model):
@@ -48,4 +58,15 @@ class Message(db.Model):
         msg.message = message
         msg.save()
         return True
+
+    @classmethod
+    def get_conversation(cls, id, page):
+        conv = Conversation.get(id)
+        if not conv:
+            return {}, 404
+        messages = Message.query.filter_by(id_conversation=id).order_by(Message.id.desc()).paginate(page=page, per_page=10)
+        liste_msg = []
+        for message in messages:
+            liste_msg.append(message.to_dict())
+        return {"Messages": liste_msg}, 200
 

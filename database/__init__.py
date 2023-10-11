@@ -1,4 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy, Model
+import enum
+
 
 class GenericModel(Model):
 
@@ -36,7 +38,14 @@ class GenericModel(Model):
         db.session.commit()
 
     def to_dict(self):
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        dict = {}
+        for c in self.__table__.columns:
+            if issubclass(getattr(self, c.name).__class__, enum.Enum):
+                dict[c.name] = getattr(self, c.name).value
+            else:
+                dict[c.name] = getattr(self, c.name)
+
+        return dict
 
 
 

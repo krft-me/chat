@@ -1,25 +1,19 @@
 import os
 import logging
 from flask import Flask, render_template
-from flask_sqlalchemy import SQLAlchemy
 
 from flask import Flask
-from flask import jsonify
-from flask import request
 
-from flask_jwt_extended import create_access_token
-from flask_jwt_extended import get_jwt_identity
-from flask_jwt_extended import jwt_required
-from flask_jwt_extended import JWTManager
 
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
+from api.main import Api
+
+import uuid
 
 # ----------------------------------------
 
 from database import db
-from database.model import Conversation, Message, TypesMessages
-from datetime import datetime
-import random
-import string
+from database.model import Conversation, Message
 
 __prg_version__ = "0.0.1"
 __prg_name__ = "chat"
@@ -43,6 +37,10 @@ app.config["SQLALCHEMY_DATABASE_URI"] = database_file
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 
+# register AccessDB
+app.register_blueprint(Api(url_prefix="/api"))
+
+
 @app.route("/", methods=["GET", "POST"])
 def accueil_vendeur():
     # conv = Conversation()
@@ -52,11 +50,11 @@ def accueil_vendeur():
     return render_template('home.html', conversations=Conversation.all(), messages=Message.query.order_by(Message.id_conversation.asc()).all())
 
 
-def get_random_string(length):
+# def get_random_string(length):
     # choose from all lowercase letter
-    letters = string.ascii_lowercase
-    result_str = ''.join(random.choice(letters) for i in range(length))
-    return result_str
+    # letters = string.ascii_lowercase
+    # result_str = ''.join(random.choice(letters) for i in range(length))
+    # return result_str
 
 
 def create_app():
@@ -68,6 +66,7 @@ def create_app():
             if 'init_db' in dir(app.blueprints[bp]):
                 app.blueprints[bp].init_db()
     app.logger.setLevel(logging.DEBUG)
+    app.config['SECRET_KEY'] = uuid.uuid4().hex
     return app
 
 
