@@ -4,11 +4,10 @@ from flask import Flask, render_template
 
 from flask import Flask
 
-
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 from api.main import Api
 
 import uuid
+
 
 # ----------------------------------------
 
@@ -22,6 +21,7 @@ CHAT_PORT = 5000
 CHAT_HOST = "0.0.0.0"
 CHAT_DEBUG = True
 
+global app
 app = Flask(__name__)
 app.config["VERSION"] = __prg_version__
 app.config["APP_PORT"] = CHAT_PORT
@@ -56,7 +56,6 @@ def accueil_vendeur():
     # result_str = ''.join(random.choice(letters) for i in range(length))
     # return result_str
 
-
 def create_app():
     db.init_app(app)
     with app.app_context():
@@ -66,7 +65,7 @@ def create_app():
             if 'init_db' in dir(app.blueprints[bp]):
                 app.blueprints[bp].init_db()
     app.logger.setLevel(logging.DEBUG)
-    app.config['SECRET_KEY'] = uuid.uuid4().hex
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', '123456789')
     return app
 
 
