@@ -1,16 +1,11 @@
 import os
 import logging
 from flask import Flask, render_template
-from flask_sqlalchemy import SQLAlchemy
 
 from flask import Flask
-from flask import jsonify
-from flask import request
 
-from flask_jwt_extended import create_access_token
-from flask_jwt_extended import get_jwt_identity
-from flask_jwt_extended import jwt_required
-from flask_jwt_extended import JWTManager
+
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 from api.main import Api
 
 import uuid
@@ -19,8 +14,6 @@ import uuid
 
 from database import db
 from database.model import Conversation, Message
-import random
-import string
 
 __prg_version__ = "0.0.1"
 __prg_name__ = "chat"
