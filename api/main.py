@@ -3,7 +3,7 @@ from flask import Blueprint, request
 from database.model import Conversation, Message
 
 
-def _get_conversations_user(id_user):
+def get_conversations_user(id_user):
     return Conversation.get_conversations_user(id_user)
 
 
@@ -23,7 +23,7 @@ class Api(Blueprint):
 
         # GET
         self.add_url_rule('/conversations/<int:id_user>',
-                          '_get_conversations_user', _get_conversations_user, methods=['GET'])
+                          '_get_conversations_user', get_conversations_user, methods=['GET'])
         self.add_url_rule('/messages/<int:id_conversation>/<int:page>',
                           'get_messages_conversation', get_messages_conversation, methods=['GET'])
 
