@@ -50,7 +50,6 @@ class Message(db.Model):
         msg = Message()
         msg.id_conversation = id_conversation
         last_msg = Message.query.filter_by(id_conversation=id_conversation).order_by(Message.id.desc()).first()
-        print(last_msg)
         msg.id = last_msg.id+1 if last_msg else 0
         msg.date = date
         msg.expediteur = expediteur

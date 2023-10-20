@@ -5,8 +5,7 @@ from flask import Flask, render_template
 from flask import Flask
 
 from api.main import Api
-
-import uuid
+from mysocket.manage_socket import socketio
 
 
 # ----------------------------------------
@@ -50,12 +49,6 @@ def accueil_vendeur():
     return render_template('home.html', conversations=Conversation.all(), messages=Message.query.order_by(Message.id_conversation.asc()).all())
 
 
-# def get_random_string(length):
-    # choose from all lowercase letter
-    # letters = string.ascii_lowercase
-    # result_str = ''.join(random.choice(letters) for i in range(length))
-    # return result_str
-
 def create_app():
     db.init_app(app)
     with app.app_context():
@@ -70,5 +63,6 @@ def create_app():
 
 
 app = create_app()
+socketio.init_app(app)
 if __name__ == "__main__":
-    app.run(host=CHAT_HOST, port=CHAT_PORT, debug=CHAT_DEBUG)
+    socketio.run(app, host=CHAT_HOST, port=CHAT_PORT, debug=CHAT_DEBUG)

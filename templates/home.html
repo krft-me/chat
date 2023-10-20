@@ -1,11 +1,43 @@
-hello :)
-la bite mec 
-:kfughlqseiufb:
+<!DOCTYPE html>
+<html lang="fr">
 
-{% for conversation in conversations %}
-<p>Conv : {{conversation.id}} - {{conversation.participants}}</p>
-{% endfor %}
+<head>
+    <script src="https://cdn.socket.io/3.1.3/socket.io.min.js"></script>
+    <title>Chat !</title>
+</head>
 
-{% for message in messages %}
-<p>Msg : {{message.id}} - {{message.message}} (Conversation {{message.id_conversation}})</p>
-{% endfor %}
+<body>
+
+    hello :)
+    la bite mec
+    :kfughlqseiufb:
+
+    {% for conversation in conversations %}
+    <p>Conv : {{conversation.id}} - {{conversation.participants}}</p>
+    {% endfor %}
+    <div style="border:3px black solid" id="insert">
+    {% for message in messages %}
+    <p>Msg : {{message.id}} - {{message.message}} (Conversation {{message.id_conversation}})</p>
+    {% endfor %}
+    </div>
+
+
+
+    <script>
+
+        var socket = io.connect('http://localhost:5000/?id_user=10');
+        var txt = "Salut :) <3"
+
+        socket.emit('message', { msg: txt, id_conversation:1, id_user_source:10});
+        const newDiv = document.createElement("p");
+        newDiv.innerHTML = "Msg : " + txt + " (Conversation "+1 +")"
+        document.getElementById("insert").appendChild(newDiv)
+
+        socket.on('response', function (data) {
+            console.log('Message reçu du serveur:', data);
+        });
+
+    </script>
+
+
+</body>
