@@ -4,25 +4,31 @@ from flask_socketio import SocketIO
 
 from database.model import Conversation, Message, TypesMessages
 
-socketio = SocketIO()
+socketio = SocketIO(logger=True, engeineio_logger=True)
 
 active_clients = {}
 
 
 @socketio.on('message')
 def handle_message(message):
-    #{'id_conversation': 1, 'id_user_source': 12, 'message': "gnagnagna"}
-    print('Message reçu:', message)
-    id_conv = message["id_conversation"]
-    id_user_source = message["id_user_source"]
-    msg = message["msg"]
-
-    Message.add_message(id_conv, datetime.now(), id_user_source, TypesMessages.string, msg)
-    conversation = Conversation.query.filter_by(id=id_conv).first()
-    for user in conversation.participants:
-        if user != id_user_source and user in active_clients.keys():
-            send_message(message, user)
-
+    try:
+        #{'id_conversation': 1, 'id_user_source': 12, 'message': "gnagnagna"}
+        print('Message reçu:', message)
+        id_conv = message["id_conversation"]
+        id_user_source = message["id_user_source"]
+        msg = message["message"]
+        type_message = TypesMessages[message["type_message"]]
+        if type_message == TypesMessages.file:
+            msg += "//" + message["file_id"]
+        
+        Message.add_message(id_conv, datetime.now(), id_user_source, type_message, msg)
+        conversation = Conversation.query.filter_by(id=id_conv).first()
+        for user in conversation.participants:
+            #if user != id_user_source:
+                if str(user) in active_clients.keys():
+                    send_message(message, user)
+    except Exception as e:
+        print(e)
 
 @socketio.on('connect')
 def handle_connect():
@@ -49,8 +55,10 @@ def handle_disconnect():
     active_clients[source_id_user].remove(source_sid_user)
     if active_clients[source_id_user] == []:
         active_clients.pop(source_id_user, None)
-    print("liste des sid restant :", active_clients[source_id_user])
-    print('Un client s\'est déconnecté')
+        print("L'utilisateur %s n'a plus de page active" %(source_id_user))
+    else:
+        print("liste des sid restant :", active_clients[source_id_user])
+        print('Un client s\'est déconnecté')
 
 
 def send_message(message, id_user=-1):

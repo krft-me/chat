@@ -1,8 +1,9 @@
 import os
 import jwt
 from flask import jsonify, request
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 from functools import wraps
+import datetime
+
 
 
 secret = os.environ.get('SECRET_KEY', '123456789')
@@ -21,3 +22,14 @@ def check_for_token(func):
             return jsonify({'message':'Invalid token'}),403
         return func(*args,**kwargs)
     return wrapped
+
+def generate_token_jwt(username):
+    try:
+        token = jwt.encode({
+                'user' : username,
+                'exp'  : datetime.datetime.utcnow() + datetime.timedelta(seconds=60)
+            },
+            secret)
+        return token
+    except Exception as e:
+        print("----------------%s---------" %e)

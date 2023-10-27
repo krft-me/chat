@@ -1,9 +1,6 @@
 import os
 import logging
-from flask import Flask, render_template
-
-from flask import Flask
-
+from flask import render_template
 from api.main import Api
 from mysocket.manage_socket import socketio
 
@@ -12,6 +9,7 @@ from mysocket.manage_socket import socketio
 
 from database import db
 from database.model import Conversation, Message
+from subclassFlask import subclassFlask
 
 __prg_version__ = "0.0.1"
 __prg_name__ = "chat"
@@ -20,8 +18,7 @@ CHAT_PORT = 5000
 CHAT_HOST = "0.0.0.0"
 CHAT_DEBUG = True
 
-global app
-app = Flask(__name__)
+app = subclassFlask(__name__)
 app.config["VERSION"] = __prg_version__
 app.config["APP_PORT"] = CHAT_PORT
 app.config["APP_HOST"] = CHAT_HOST
@@ -63,6 +60,6 @@ def create_app():
 
 
 app = create_app()
-socketio.init_app(app)
+socketio.init_app(app, cors_allowed_origins="*")
 if __name__ == "__main__":
     socketio.run(app, host=CHAT_HOST, port=CHAT_PORT, debug=CHAT_DEBUG)

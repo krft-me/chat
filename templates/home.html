@@ -2,42 +2,117 @@
 <html lang="fr">
 
 <head>
-    <script src="https://cdn.socket.io/3.1.3/socket.io.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"
+        integrity="sha512-Xm9qbB6Pu06k3PUwPj785dyTl6oHxgsv9nHp7ej7nCpAqGZT3OZpsELuCYX05DdonFpTlBpXMOxjavIAIUwr0w=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" Access-Control-Allow-Origin="*"></script>
     <title>Chat !</title>
 </head>
 
 <body>
 
-    hello :)
-    la bite mec
-    :kfughlqseiufb:
+    <div style="display : flex;">
+        <div style="margin:50px">
+            <h4>Texte de votre message string</h4>
+            <div>
+                <input id="texte_socket" type="text" value="">
+                <input type="button" value="Envoyer" onclick="send_socket()">
+            </div>
+        </div>
+        <div style="margin:50px">
+            <div style="display:flex">
+                <div>
+                    <h4>Nom de votre fichier</h4>
+                    <div>
+                        <input id="file_name_socket" type="text" value="">
+                    </div>
+                </div>
+                <div>
+                    <h4>Id de votre fichier</h4>
+                    <div>
+                        <input id="id_file_socket" type="number" value="1">
+                    </div>
+                </div>
+            </div>
+            <input type="button" value="Envoyer" onclick="send_socket_file()">
 
-    {% for conversation in conversations %}
-    <p>Conv : {{conversation.id}} - {{conversation.participants}}</p>
-    {% endfor %}
-    <div style="border:3px black solid" id="insert">
-    {% for message in messages %}
-    <p>Msg : {{message.id}} - {{message.message}} (Conversation {{message.id_conversation}})</p>
-    {% endfor %}
+        </div>
+    </div>
+
+
+
+    <div id="insert">
+
     </div>
 
 
 
     <script>
-
-        var socket = io.connect('http://localhost:5000/?id_user=10');
-        var txt = "Salut :) <3"
-
-        socket.emit('message', { msg: txt, id_conversation:1, id_user_source:10});
-        const newDiv = document.createElement("p");
-        newDiv.innerHTML = "Msg : " + txt + " (Conversation "+1 +")"
-        document.getElementById("insert").appendChild(newDiv)
-
+        var token = ""
+        var socket = io.connect('/?id_user=10');
         socket.on('response', function (data) {
             console.log('Message reçu du serveur:', data);
+            add_message(data)
         });
+        function send_socket() {
+            var texte = document.getElementById("texte_socket").value
+            socket.emit('message', { message: texte, id_conversation: 1, id_user_source: 10, type_message: "string" });
+        }
 
+        function send_socket_file(){
+            var file_name = document.getElementById("file_name_socket").value
+            var id_file = document.getElementById("id_file_socket").value
+            socket.emit('message', { message: file_name, id_conversation: 1, id_user_source: 10, type_message: "file", file_id: id_file});
+        }
+
+        var url = "/api/getToken";
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+
+        xhr.onload = function (e) {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    token = JSON.parse(xhr.responseText)["jwt"]
+                    var url2 = "/api/messages/1/1";
+                    var xhr2 = new XMLHttpRequest();
+                    xhr2.open("GET", url2, true);
+                    xhr2.setRequestHeader('Authorization', token);
+
+                    xhr2.onload = function (e) {
+                        if (xhr2.readyState === 4) {
+                            if (xhr2.status === 200) {
+                                var response = JSON.parse(xhr2.responseText);
+                                for (var i = response["Messages"].length - 1; i >= 0; i--) {
+                                    let msg = response["Messages"][i]
+                                    add_message(msg)
+                                }
+                            } else {
+                                console.error(xhr2.statusText);
+                            }
+                        }
+                    };
+                    xhr2.send()
+                } else {
+                    console.error(xhr.statusText);
+                }
+            }
+        };
+        var dic = JSON.stringify({ username: "AXEL" })
+        console.log(dic)
+        xhr.send(dic);
+
+
+        function add_message(message) {
+            const newDiv = document.createElement("p");
+            newDiv.innerHTML = "Type : " + message.type_message + "<br>Message : " + message.message;
+            if (message.type_message == "file") {
+                newDiv.innerHTML += "<br>Id fichier :" + message.file_id;
+            }
+            newDiv.style.border = "1px solid red";
+            newDiv.style.margin = "5px";
+            document.getElementById("insert").insertBefore(newDiv, document.getElementById("insert").firstChild);
+
+        }
     </script>
-
-
 </body>

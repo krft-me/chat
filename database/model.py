@@ -40,6 +40,22 @@ class Message(db.Model):
     type_message = db.Column(Enum(TypesMessages), nullable=False, default="string")
     message = db.Column(db.String, nullable=False)
 
+    def to_dict(self):
+        dict = {}
+        for c in self.__table__.columns:
+            if c.name != "message":
+                if c.name == "type_message":
+                    dict[c.name] = self.__dict__[c.name].value
+                    if c.type.python_type(self.__dict__[c.name]).name == "file":
+                        dict["file_id"] = self.message.split("//")[1]
+                        dict["message"] = self.message.split("//")[0]
+                    else:
+                        dict["message"] = self.message
+                else:
+                    dict[c.name] = self.__dict__[c.name]
+
+        return dict
+
     @classmethod
     def add_message(cls, id_conversation, date, expediteur, type_message, message):
         conv = Conversation.get(id_conversation)
