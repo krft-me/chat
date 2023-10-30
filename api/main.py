@@ -1,33 +1,18 @@
 from flask import Blueprint, request, jsonify
 from database.model import Conversation, Message
-from security.jwt_token import check_for_token, generate_token_jwt
-from security.jwt_token import secret
 
-@check_for_token
+
 def get_conversations_user(id_user):
     return Conversation.get_conversations_user(id_user)
 
 
-@check_for_token
 def get_messages_conversation(id_conversation, page):
     return Message.get_conversation(id_conversation, page)
 
-@check_for_token
 def post_conversation():
     participants = request.get_json()["participants"]
     return {"Id": Conversation.add_conversation(participants).id}, 200
 
-
-def gettoken():
-    try:
-        data = request.get_json()
-        if "username" in data.keys() and data['username'] != '':
-            token = generate_token_jwt(data['username'])
-            return {'jwt' : token}
-        else:
-            return jsonify({'message':'utilisateur invalide'}),403
-    except Exception as e:
-        print(e)
 
 
 class Api(Blueprint):
@@ -40,8 +25,6 @@ class Api(Blueprint):
                           'get_conversations_user', get_conversations_user, methods=['GET'])
         self.add_url_rule('/messages/<int:id_conversation>/<int:page>',
                           'get_messages_conversation', get_messages_conversation, methods=['GET'])
-        self.add_url_rule('/getToken',
-                          'getToken', gettoken, methods=['POST'])
 
         # POST
         self.add_url_rule('/conversations', 'conversations_user',

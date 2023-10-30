@@ -3,7 +3,7 @@ import logging
 from flask import render_template
 from api.main import Api
 from mysocket.manage_socket import socketio
-
+from datetime import datetime
 
 # ----------------------------------------
 
@@ -39,10 +39,8 @@ app.register_blueprint(Api(url_prefix="/api"))
 
 @app.route("/", methods=["GET", "POST"])
 def accueil_vendeur():
-    # conv = Conversation()
-    # conv.participants = [10,20]
-    # conv.save()
-    # Message.add_message(1, datetime.now(), 10, TypesMessages.string, get_random_string(8))
+    #Conversation.add_conversation([2, 3])
+   
     return render_template('home.html', conversations=Conversation.all(), messages=Message.query.order_by(Message.id_conversation.asc()).all())
 
 

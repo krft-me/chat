@@ -10,6 +10,17 @@
 </head>
 
 <body>
+    <div>
+        <h3 id="user_id"></h3>
+    </div>
+
+    <div >
+        <label>Discussion sur laquelle émit</label>
+        <select id="liste_conv">
+
+        </select>
+      </div>
+
 
     <div style="display : flex;">
         <div style="margin:50px">
@@ -48,59 +59,56 @@
 
 
     <script>
-        var token = ""
-        var socket = io.connect('/?id_user=10');
+        var random_user = parseInt(Math.floor(Math.random()*3)+1)
+        var socket = io.connect('/?id_user=' + random_user);
+        document.getElementById("user_id").innerHTML = random_user
         socket.on('response', function (data) {
             console.log('Message reçu du serveur:', data);
             add_message(data)
         });
+
+
+
         function send_socket() {
             var texte = document.getElementById("texte_socket").value
-            socket.emit('message', { message: texte, id_conversation: 1, id_user_source: 10, type_message: "string" });
+            var conv = document.getElementById("liste_conv").value
+            console.log(conv)
+            socket.emit('message', { message: texte, id_conversation: conv, id_user_source: random_user, type_message: "string" });
         }
 
-        function send_socket_file(){
+        function send_socket_file() {
             var file_name = document.getElementById("file_name_socket").value
             var id_file = document.getElementById("id_file_socket").value
-            socket.emit('message', { message: file_name, id_conversation: 1, id_user_source: 10, type_message: "file", file_id: id_file});
+            var conv = document.getElementById("liste_conv").value
+            socket.emit('message', { message: file_name, id_conversation: conv, id_user_source: random_user, type_message: "file", file_id: id_file });
         }
 
-        var url = "/api/getToken";
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", url, true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
 
-        xhr.onload = function (e) {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
-                    token = JSON.parse(xhr.responseText)["jwt"]
-                    var url2 = "/api/messages/1/1";
-                    var xhr2 = new XMLHttpRequest();
-                    xhr2.open("GET", url2, true);
-                    xhr2.setRequestHeader('Authorization', token);
+        var url2 = "/api/conversations/" + random_user;
+        var xhr2 = new XMLHttpRequest();
+        xhr2.open("GET", url2, true);
 
-                    xhr2.onload = function (e) {
-                        if (xhr2.readyState === 4) {
-                            if (xhr2.status === 200) {
-                                var response = JSON.parse(xhr2.responseText);
-                                for (var i = response["Messages"].length - 1; i >= 0; i--) {
-                                    let msg = response["Messages"][i]
-                                    add_message(msg)
-                                }
-                            } else {
-                                console.error(xhr2.statusText);
-                            }
-                        }
-                    };
-                    xhr2.send()
+
+        xhr2.onload = function (e) {
+            if (xhr2.readyState === 4) {
+                if (xhr2.status === 200) {
+                    var response = JSON.parse(xhr2.responseText);
+                    var select = document.getElementById("liste_conv")
+                    for (var i = response["Conversations"].length - 1; i >= 0; i--) {
+                        let conv = response["Conversations"][i]
+                        var opt = document.createElement('option');
+                        opt.value = conv.id;
+                        opt.innerHTML = conv.participants;
+                        select.appendChild(opt);
+
+                    }
                 } else {
-                    console.error(xhr.statusText);
+                    console.error(xhr2.statusText);
                 }
             }
         };
-        var dic = JSON.stringify({ username: "AXEL" })
-        console.log(dic)
-        xhr.send(dic);
+        xhr2.send()
+
 
 
         function add_message(message) {

@@ -28,21 +28,20 @@ def handle_connect():
     source_id_user = request.args.get('id_user')
     if not source_id_user:
         raise Exception("Pas d'id utilisateur")
-    conversations = Conversation.get_conversations_user(source_id_user)
-    # voir avec les rooms 
-    # https://flask-socketio.readthedocs.io/en/latest/getting_started.html#rooms
-    for conversation in conversations:
-        join_room(conversation)
+    conversations, _ = Conversation.get_conversations_user(source_id_user)
+
+    for conversation in conversations["Conversations"]:
+        join_room(str(conversation["id"]))
 
 @socketio.on('disconnect')
 def handle_disconnect():
     source_id_user = request.args.get('id_user')
+    print("Disconnect : " + source_id_user)
     if not source_id_user:
         raise Exception("Pas d'id utilisateur")
-    conversations = Conversation.get_conversations_user(source_id_user)
-    for conversation in conversations:
-        leave_room(conversation)
-
+    conversations, _ = Conversation.get_conversations_user(source_id_user)
+    for conversation in conversations["Conversations"]:
+        leave_room(str(conversation["id"]))
 
 def send_message(message, room):
-    socketio.send(message, to=room)
+    socketio.emit('response',message, to=str(room))

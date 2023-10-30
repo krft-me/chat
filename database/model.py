@@ -1,6 +1,7 @@
 from database import db
 import enum
 from sqlalchemy import Enum
+from datetime import datetime
 
 class TypesMessages(enum.Enum):
     string = "string"
@@ -12,22 +13,26 @@ class Conversation(db.Model):
 
     id = db.Column(db.Integer, nullable=False, primary_key=True, autoincrement=True)
     participants = db.Column(db.PickleType, index=True)
+    last_message = db.Column(db.DateTime, nullable=False)
 
     @classmethod
     def add_conversation(cls, participants):
         conv = Conversation()
         conv.participants = participants
+        conv.last_message = datetime.now()
         conv.save()
         return conv
     
     @classmethod
     def get_conversations_user(cls, user):
-        all_conv = Conversation.all()
+        all_conv = Conversation.query.order_by(Conversation.last_message.desc()).all()
         liste_conv = []
         for conv in all_conv:
-            if user in conv.participants:
+            if int(user) in conv.participants:
                 liste_conv.append(conv.to_dict())
-        return liste_conv, 200
+        return {"Conversations" : liste_conv}, 200
+    
+    
 
 
 class Message(db.Model):
@@ -72,6 +77,8 @@ class Message(db.Model):
         msg.type_message = type_message
         msg.message = message
         msg.save()
+        conv.last_message = date
+        conv.save()
         return True
 
     @classmethod
